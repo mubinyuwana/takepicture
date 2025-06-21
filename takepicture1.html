@@ -102,7 +102,7 @@
 
     // Watermark
     function drawWatermark(ctx, width, height, data) {
-      const watermarkHeight = 110;
+      const watermarkHeight = 140;
       // Black transparent rectangle
       ctx.save();
       ctx.globalAlpha = 0.4;
@@ -115,6 +115,19 @@
       ctx.textBaseline = "top";
       ctx.globalAlpha = 1.0;
 
+      // Create detailed date and time
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('id-ID', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const timeStr = now.toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+
       // Each line: [label] [value]
       const lines = [
         `item_tag: ${data.itemTag}`,
@@ -122,7 +135,8 @@
         `latitude: ${data.latitude}`,
         `longitude: ${data.longitude}`,
         `altitude: ${data.altitude}`,
-        `datetime: ${data.datetime}`
+        `tanggal: ${dateStr}`,
+        `waktu: ${timeStr}`
       ];
       const lineHeight = 20;
       lines.forEach((line, i) => {
@@ -156,6 +170,20 @@
 
       // Show result
       const imgUrl = canvas.toDataURL('image/jpeg', 0.92);
+      
+      // Create detailed date and time for display
+      const nowDisplay = new Date();
+      const dateStrDisplay = nowDisplay.toLocaleDateString('id-ID', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const timeStrDisplay = nowDisplay.toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+      
       resultContainer.innerHTML = `
         <div class="mb-2">
           <img src="${imgUrl}" alt="Hasil Foto" class="w-full rounded shadow-lg border border-gray-700">
@@ -166,7 +194,8 @@
           <div><span class="font-semibold">latitude:</span> ${data.latitude}</div>
           <div><span class="font-semibold">longitude:</span> ${data.longitude}</div>
           <div><span class="font-semibold">altitude:</span> ${data.altitude}</div>
-          <div><span class="font-semibold">datetime:</span> ${data.datetime}</div>
+          <div><span class="font-semibold">tanggal:</span> ${dateStrDisplay}</div>
+          <div><span class="font-semibold">waktu:</span> ${timeStrDisplay}</div>
         </div>
         <button id="downloadBtn" class="mt-2 w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded font-semibold transition">Download Gambar</button>
         <button id="retakeBtn" class="mt-2 w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded font-semibold transition">Ambil Ulang</button>
