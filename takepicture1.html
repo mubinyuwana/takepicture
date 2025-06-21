@@ -132,8 +132,7 @@
       const lines = [
         `item_tag: ${data.itemTag}`,
         `note: ${data.note}`,
-        `latitude: ${data.latitude}`,
-        `longitude: ${data.longitude}`,
+        `coordinates: (${data.latitude}, ${data.longitude})`,
         `altitude: ${data.altitude} m`,
         `date: ${dateStr}`,
         `time: ${timeStr}`
@@ -191,8 +190,7 @@
         <div class="bg-gray-800 rounded p-2 text-xs text-gray-300">
           <div><span class="font-semibold">item_tag:</span> ${data.itemTag}</div>
           <div><span class="font-semibold">note:</span> ${data.note}</div>
-          <div><span class="font-semibold">latitude:</span> ${data.latitude}</div>
-          <div><span class="font-semibold">longitude:</span> ${data.longitude}</div>
+          <div><span class="font-semibold">coordinates:</span> (${data.latitude}, ${data.longitude})</div>
           <div><span class="font-semibold">altitude:</span> ${data.altitude} m</div>
           <div><span class="font-semibold">date:</span> ${dateStrDisplay}</div>
           <div><span class="font-semibold">time:</span> ${timeStrDisplay}</div>
