@@ -105,12 +105,12 @@
       const watermarkHeight = 160;
       // Black transparent rectangle
       ctx.save();
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = 0.7;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, height - watermarkHeight, width, watermarkHeight);
       ctx.restore();
 
-      ctx.font = "bold 18px monospace";
+      ctx.font = "bold 20px Arial, sans-serif";
       ctx.fillStyle = "#fff";
       ctx.textBaseline = "top";
       ctx.globalAlpha = 1.0;
@@ -138,7 +138,7 @@
         `date: ${dateStr}`,
         `time: ${timeStr}`
       ];
-      const lineHeight = 20;
+      const lineHeight = 22;
       lines.forEach((line, i) => {
         ctx.fillText(line, 16, height - watermarkHeight + 10 + i * lineHeight);
       });
