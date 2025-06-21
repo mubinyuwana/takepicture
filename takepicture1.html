@@ -176,7 +176,9 @@
       document.getElementById('downloadBtn').onclick = () => {
         const a = document.createElement('a');
         a.href = imgUrl;
-        a.download = `foto-geotag-${data.datetime.replace(/[:T]/g, '-')}.jpg`;
+        // Use itemTag as filename, with fallback to datetime if itemTag is empty
+        const filename = itemTagInput.value.trim() || `foto-geotag-${data.datetime.replace(/[:T]/g, '-')}`;
+        a.download = `${filename}.jpg`;
         a.click();
       };
       document.getElementById('retakeBtn').onclick = () => {
