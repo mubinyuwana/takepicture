@@ -32,10 +32,12 @@
     <div id="infoDisplay" class="text-sm text-gray-400"></div>
   </div>
   <script>
+    // State
     let stream = null;
     let coords = { latitude: null, longitude: null, altitude: null, accuracy: null };
     let watchId = null;
 
+    // Elements
     const startCameraBtn = document.getElementById('startCamera');
     const captureBtn = document.getElementById('captureBtn');
     const video = document.getElementById('video');
@@ -47,6 +49,7 @@
     const itemTagInput = document.getElementById('itemTag');
     const noteInput = document.getElementById('note');
 
+    // Geolocation
     function updateCoords(position) {
       coords.latitude = position.coords.latitude;
       coords.longitude = position.coords.longitude;
@@ -69,16 +72,10 @@
       }
     }
 
+    // Camera
     async function startCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: "environment",
-            width: { ideal: 1920, min: 1280 },
-            height: { ideal: 1080, min: 720 }
-          }, 
-          audio: false 
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
         video.srcObject = stream;
         videoContainer.classList.remove('hidden');
         captureBtn.disabled = false;
@@ -103,36 +100,37 @@
       }
     }
 
+    // Watermark
     function drawWatermark(ctx, width, height, data) {
-      const watermarkHeight = 160;
+      const watermarkHeight = 110;
+      // Black transparent rectangle
       ctx.save();
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = 0.4;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, height - watermarkHeight, width, watermarkHeight);
       ctx.restore();
 
-      const baseFontSize = Math.max(16, Math.min(24, width / 40));
-      ctx.font = `bold ${baseFontSize}px Arial, sans-serif`;
+      ctx.font = "bold 18px monospace";
       ctx.fillStyle = "#fff";
       ctx.textBaseline = "top";
       ctx.globalAlpha = 1.0;
 
+      // Each line: [label] [value]
       const lines = [
-        `Item Tag: ${data.itemTag}`,
-        `Note: ${data.note}`,
-        `Latitude: ${data.latitude}`,
-        `Longitude: ${data.longitude}`,
-        `Altitude: ${data.altitude}`,
-        `Tanggal & Waktu: ${data.datetime}`
+        `item_tag: ${data.itemTag}`,
+        `note: ${data.note}`,
+        `latitude: ${data.latitude}`,
+        `longitude: ${data.longitude}`,
+        `altitude: ${data.altitude}`,
+        `datetime: ${data.datetime}`
       ];
-      const lineHeight = baseFontSize + 8;
-      const startY = height - watermarkHeight + 20;
-      
+      const lineHeight = 20;
       lines.forEach((line, i) => {
-        ctx.fillText(line, 20, startY + i * lineHeight);
+        ctx.fillText(line, 16, height - watermarkHeight + 10 + i * lineHeight);
       });
     }
 
+    // Capture
     captureBtn.addEventListener('click', () => {
       if (!stream) return;
       const width = video.videoWidth;
@@ -140,20 +138,11 @@
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
-      
-      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(video, 0, 0, width, height);
 
+      // Prepare data
       const now = new Date();
-      const datetime = now.toLocaleString('id-ID', { 
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
+      const datetime = now.toLocaleString('sv-SE', { hour12: false }).replace(' ', 'T');
       const data = {
         itemTag: itemTagInput.value,
         note: noteInput.value,
@@ -165,6 +154,7 @@
 
       drawWatermark(ctx, width, height, data);
 
+      // Show result
       const imgUrl = canvas.toDataURL('image/jpeg', 0.92);
       resultContainer.innerHTML = `
         <div class="mb-2">
@@ -176,8 +166,7 @@
           <div><span class="font-semibold">latitude:</span> ${data.latitude}</div>
           <div><span class="font-semibold">longitude:</span> ${data.longitude}</div>
           <div><span class="font-semibold">altitude:</span> ${data.altitude}</div>
-          <div><span class="font-semibold">tanggal_waktu:</span> ${data.datetime}</div>
-          <div><span class="font-semibold">resolusi:</span> ${width} x ${height}</div>
+          <div><span class="font-semibold">datetime:</span> ${data.datetime}</div>
         </div>
         <button id="downloadBtn" class="mt-2 w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded font-semibold transition">Download Gambar</button>
         <button id="retakeBtn" class="mt-2 w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded font-semibold transition">Ambil Ulang</button>
@@ -187,7 +176,7 @@
       document.getElementById('downloadBtn').onclick = () => {
         const a = document.createElement('a');
         a.href = imgUrl;
-        a.download = `foto-geotag-${data.datetime.replace(/[\/\s:]/g, '-')}.jpg`;
+        a.download = `foto-geotag-${data.datetime.replace(/[:T]/g, '-')}.jpg`;
         a.click();
       };
       document.getElementById('retakeBtn').onclick = () => {
@@ -197,11 +186,17 @@
     });
 
     startCameraBtn.addEventListener('click', startCamera);
+
+    // Prevent form submit
     infoForm.addEventListener('submit', e => e.preventDefault());
+
+    // Responsive: stop camera when page hidden
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) stopCamera();
     });
+
+    // Try to get location on load
     getLocation();
   </script>
 </body>
-</html> 
+</html>
