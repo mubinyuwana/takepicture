@@ -102,7 +102,7 @@
 
     // Watermark
     function drawWatermark(ctx, width, height, data) {
-      const watermarkHeight = 140;
+      const watermarkHeight = 160;
       // Black transparent rectangle
       ctx.save();
       ctx.globalAlpha = 0.4;
@@ -117,10 +117,10 @@
 
       // Create detailed date and time
       const now = new Date();
-      const dateStr = now.toLocaleDateString('id-ID', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      const dateStr = now.toLocaleDateString('en-GB', { 
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric'
       });
       const timeStr = now.toLocaleTimeString('id-ID', { 
         hour: '2-digit', 
@@ -135,8 +135,8 @@
         `latitude: ${data.latitude}`,
         `longitude: ${data.longitude}`,
         `altitude: ${data.altitude}`,
-        `tanggal: ${dateStr}`,
-        `waktu: ${timeStr}`
+        `date: ${dateStr}`,
+        `time: ${timeStr}`
       ];
       const lineHeight = 20;
       lines.forEach((line, i) => {
@@ -173,10 +173,10 @@
       
       // Create detailed date and time for display
       const nowDisplay = new Date();
-      const dateStrDisplay = nowDisplay.toLocaleDateString('id-ID', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      const dateStrDisplay = nowDisplay.toLocaleDateString('en-GB', { 
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric'
       });
       const timeStrDisplay = nowDisplay.toLocaleTimeString('id-ID', { 
         hour: '2-digit', 
@@ -194,8 +194,8 @@
           <div><span class="font-semibold">latitude:</span> ${data.latitude}</div>
           <div><span class="font-semibold">longitude:</span> ${data.longitude}</div>
           <div><span class="font-semibold">altitude:</span> ${data.altitude}</div>
-          <div><span class="font-semibold">tanggal:</span> ${dateStrDisplay}</div>
-          <div><span class="font-semibold">waktu:</span> ${timeStrDisplay}</div>
+          <div><span class="font-semibold">date:</span> ${dateStrDisplay}</div>
+          <div><span class="font-semibold">time:</span> ${timeStrDisplay}</div>
         </div>
         <button id="downloadBtn" class="mt-2 w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded font-semibold transition">Download Gambar</button>
         <button id="retakeBtn" class="mt-2 w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded font-semibold transition">Ambil Ulang</button>
