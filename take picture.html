@@ -22,6 +22,7 @@
       <div class="flex flex-col sm:flex-row gap-2">
         <button type="button" id="startCamera" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition">Akses Kamera</button>
         <button type="button" id="captureBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition" disabled>Ambil Gambar</button>
+        <button type="button" id="captureHDBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded transition" disabled>Ambil Gambar HD</button>
       </div>
     </form>
     <div id="videoContainer" class="mb-4 hidden">
@@ -40,6 +41,7 @@
     // Elements
     const startCameraBtn = document.getElementById('startCamera');
     const captureBtn = document.getElementById('captureBtn');
+    const captureHDBtn = document.getElementById('captureHDBtn');
     const video = document.getElementById('video');
     const videoContainer = document.getElementById('videoContainer');
     const canvas = document.getElementById('canvas');
@@ -75,10 +77,18 @@
     // Camera
     async function startCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: "environment",
+            width: { ideal: 3840, min: 1920 },
+            height: { ideal: 2160, min: 1080 }
+          }, 
+          audio: false 
+        });
         video.srcObject = stream;
         videoContainer.classList.remove('hidden');
         captureBtn.disabled = false;
+        captureHDBtn.disabled = false;
         startCameraBtn.disabled = true;
         getLocation();
       } catch (e) {
@@ -93,6 +103,7 @@
       }
       videoContainer.classList.add('hidden');
       captureBtn.disabled = true;
+      captureHDBtn.disabled = true;
       startCameraBtn.disabled = false;
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
@@ -102,15 +113,15 @@
 
     // Watermark
     function drawWatermark(ctx, width, height, data) {
-      const watermarkHeight = 110;
+      const watermarkHeight = 140;
       // Black transparent rectangle
       ctx.save();
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = 0.6;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, height - watermarkHeight, width, watermarkHeight);
       ctx.restore();
 
-      ctx.font = "bold 18px monospace";
+      ctx.font = "bold 20px monospace";
       ctx.fillStyle = "#fff";
       ctx.textBaseline = "top";
       ctx.globalAlpha = 1.0;
@@ -124,25 +135,38 @@
         `altitude: ${data.altitude}`,
         `tanggal_waktu: ${data.datetime}`
       ];
-      const lineHeight = 20;
+      const lineHeight = 22;
       lines.forEach((line, i) => {
-        ctx.fillText(line, 16, height - watermarkHeight + 10 + i * lineHeight);
+        ctx.fillText(line, 20, height - watermarkHeight + 15 + i * lineHeight);
       });
     }
 
-    // Capture
-    captureBtn.addEventListener('click', () => {
+    // Capture function with quality parameter
+    function captureImage(quality = 0.95, scale = 1) {
       if (!stream) return;
-      const width = video.videoWidth;
-      const height = video.videoHeight;
+      const width = video.videoWidth * scale;
+      const height = video.videoHeight * scale;
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
+      
+      // Enable image smoothing for better quality
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
       ctx.drawImage(video, 0, 0, width, height);
 
       // Prepare data
       const now = new Date();
-      const datetime = now.toLocaleString('sv-SE', { hour12: false }).replace(' ', 'T');
+      const datetime = now.toLocaleString('id-ID', { 
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
       const data = {
         itemTag: itemTagInput.value,
         note: noteInput.value,
@@ -154,8 +178,8 @@
 
       drawWatermark(ctx, width, height, data);
 
-      // Show result
-      const imgUrl = canvas.toDataURL('image/jpeg', 0.92);
+      // Show result with specified quality
+      const imgUrl = canvas.toDataURL('image/jpeg', quality);
       resultContainer.innerHTML = `
         <div class="mb-2">
           <img src="${imgUrl}" alt="Hasil Foto" class="w-full rounded shadow-lg border border-gray-700">
@@ -167,6 +191,8 @@
           <div><span class="font-semibold">longitude:</span> ${data.longitude}</div>
           <div><span class="font-semibold">altitude:</span> ${data.altitude}</div>
           <div><span class="font-semibold">tanggal_waktu:</span> ${data.datetime}</div>
+          <div><span class="font-semibold">resolusi:</span> ${width} x ${height}</div>
+          <div><span class="font-semibold">kualitas:</span> ${Math.round(quality * 100)}%</div>
         </div>
         <button id="downloadBtn" class="mt-2 w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded font-semibold transition">Download Gambar</button>
         <button id="retakeBtn" class="mt-2 w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded font-semibold transition">Ambil Ulang</button>
@@ -176,13 +202,23 @@
       document.getElementById('downloadBtn').onclick = () => {
         const a = document.createElement('a');
         a.href = imgUrl;
-        a.download = `foto-geotag-${data.datetime.replace(/[:T]/g, '-')}.jpg`;
+        a.download = `foto-geotag-${data.datetime.replace(/[\/\s:]/g, '-')}.jpg`;
         a.click();
       };
       document.getElementById('retakeBtn').onclick = () => {
         resultContainer.innerHTML = '';
         startCamera();
       };
+    }
+
+    // Capture
+    captureBtn.addEventListener('click', () => {
+      captureImage(0.95, 1);
+    });
+
+    // Capture HD
+    captureHDBtn.addEventListener('click', () => {
+      captureImage(1.0, 1.5);
     });
 
     startCameraBtn.addEventListener('click', startCamera);
